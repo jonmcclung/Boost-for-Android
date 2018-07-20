@@ -37,11 +37,7 @@ To compile Boost for Android you may use one of the following NDKs:
 
 Linux.
 ```
-./build-android.sh $(NDK_ROOT)
-```
-Windows:
-```
-build-android.bat $(NDK_ROOT)
+./build.sh $(NDK_ROOT)
 ```
 NOTE: Do not forget to replace backslash with slashes in $(NDK_ROOT). For example set $(NDK_ROOT) to D:/android-ndk-r8e instead of D:\android-ndk-r8e
     

@@ -1,5 +1,5 @@
 <compileflags>-gcc-toolchain
-<compileflags>$(AndroidNDKRoot)/toolchains/aarch64-linux-android-4.9/prebuilt/${PlatformOS}-x86_64
+<compileflags>"$(AndroidNDKRoot)/toolchains/aarch64-linux-android-4.9/prebuilt/${PlatformOS}-x86_64"
 <compileflags>-target
 <compileflags>aarch64-none-linux-android
 <compileflags>-fpic
@@ -7,4 +7,4 @@
 <compileflags>$(AndroidNDKRoot)/sysroot
 <compileflags>-isystem
 <compileflags>$(AndroidNDKRoot)/sysroot/usr/include/aarch64-linux-android
-<compileflags>-D__ANDROID_API__=21
+<compileflags>-D__ANDROID_API__=16
