@@ -361,7 +361,8 @@ then
 	if [ "$OPTION_PROGRESS" = "yes" ] ; then
 		pv $PROGDIR/$BOOST_TAR | tar xzf - -C $PROGDIR
 	else
-		tar xzf $PROGDIR/$BOOST_TAR
+		bzip2 -dk $PROGDIR/$BOOST_TAR
+		mv $PROGDIR/${BOOST_TAR}.out $PROGDIR/${BOOST_DIR}
 	fi
 fi
 
