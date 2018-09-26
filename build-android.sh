@@ -131,6 +131,10 @@ PROGRAM_DESCRIPTION=\
 
 extract_parameters $@
 
+
+echo "PARAMETERS: ${PARAMETERS}"
+echo "ANDROID_NDK_ROOT: ${ANDROID_NDK_ROOT}"
+
 echo "Building boost version: $BOOST_VER1.$BOOST_VER2.$BOOST_VER3"
 
 # -----------------------

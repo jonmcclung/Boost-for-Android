@@ -546,7 +546,6 @@ extract_parameters ()
                 PARAMETERS="$PARAMETERS $1"
             fi
             shift
-            echo "PARAMETERS: ${PARAMETERS}"
             continue
         fi
 
