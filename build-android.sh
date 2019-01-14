@@ -28,16 +28,12 @@
 # -----------------------
 
 BOOST_VER1=1
-BOOST_VER2=69
+BOOST_VER2=68
 BOOST_VER3=0
-register_option "--boost=<version>" boost_version "Boost version to be used, one of {1.69.0, 1.68.0, 1.67.0, 1.66.0, 1.65.1, 1.55.0, 1.54.0, 1.53.0, 1.49.0, 1.48.0, 1.45.0}, default is 1.69.0."
+register_option "--boost=<version>" boost_version "Boost version to be used, one of {1.68.0, 1.67.0, 1.66.0, 1.65.1, 1.55.0, 1.54.0, 1.53.0, 1.49.0, 1.48.0, 1.45.0}, default is 1.68.0."
 boost_version()
 {
-  if [ "$1" = "1.69.0" ]; then
-    BOOST_VER1=1
-    BOOST_VER2=69
-    BOOST_VER3=0    
-  elif [ "$1" = "1.68.0" ]; then
+  if [ "$1" = "1.68.0" ]; then
     BOOST_VER1=1
     BOOST_VER2=68
     BOOST_VER3=0    
@@ -298,7 +294,7 @@ case "$NDK_RN" in
 		CXXPATH=$AndroidNDKRoot/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/arm-linux-androideabi-g++
 		TOOLSET=gcc-androidR8e
 		;;
-	"16.0"|"16.1"|"17.1"|"17.2"|"18.0"|"18.1")
+	"16.0"|"16.1"|"17.1"|"17.2"|"18.0")
 		TOOLCHAIN=${TOOLCHAIN:-llvm}
 		CXXPATH=$AndroidNDKRoot/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/clang++
 		TOOLSET=clang
@@ -318,7 +314,7 @@ if [ -z "${ARCHLIST}" ]; then
 
     case "$NDK_RN" in
       # NDK 17+: Support for ARMv5 (armeabi), MIPS, and MIPS64 has been removed.
-      "17.1"|"17.2"|"18.0"|"18.1")
+      "17.1"|"17.2"|"18.0")
         ARCHLIST="arm64-v8a armeabi-v7a x86 x86_64"
         ;;
       *)
@@ -362,11 +358,7 @@ fi
 if [ ! -d $PROGDIR/$BOOST_DIR ]
 then
 	echo "Unpacking boost"
-	if [ "$OPTION_PROGRESS" = "yes" ] ; then
-		pv $PROGDIR/$BOOST_TAR | tar xjf - -C $PROGDIR
-	else
-		tar xjf $PROGDIR/$BOOST_TAR
-	fi
+  tar xjf $PROGDIR/$BOOST_TAR
 fi
 
 if [ $DOWNLOAD = yes ] ; then
@@ -521,7 +513,6 @@ echo "Building boost for android for $ARCH"
   fi
 
   { ./bjam -q                         \
-         --ignore-site-config         \
          -j$NCPU                      \
          target-os=${TARGET_OS}       \
          toolset=${TOOLSET_ARCH}      \
