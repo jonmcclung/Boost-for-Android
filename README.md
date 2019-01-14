@@ -1,4 +1,5 @@
 # Boost for Android
+
 Boost for android is a set of tools to compile the main part of the [Boost C++ Libraries](http://www.boost.org/) for the Android platform.
 
 Currently supported boost versions are 1.45.0, 1.48.0, 1.49.0, 1.53.0, 1.54.0, 1.55.0, 1.65.1, 1.66.0, 1.67.0, 1.68.0 and 1.69.0.
@@ -104,3 +105,16 @@ add full path to the gnustl_static library to the link paths. Example:
 Support for ARMv5 (armeabi), MIPS, and MIPS64 has been removed. Attempting to build any of these ABIs will result in an error.
 This project will exclude these architectures for compiling with NDK 17.
 
+## This Fork
+
+The following changes have been made for this fork:
+
+Global regex replace: 
+
+- `<compileflags>([^"].*)\$\{PlatformOS\}(.*)` -> `<compileflags>"$1${PlatformOS}$2"`
+- `<compileflags>-D__ANDROID_API__=\d+` -> `<compileflags>-D__ANDROID_API__=16`
+- `<compileflags>armv7-none-linux-androideabi15` -> `<compileflags>armv7-none-linux-androideabi`
+
+Added `local PlatformOS = [ os.environ PlatformOS ] ;` in `user-config-boost-1_67_0.jam`
+
+`build-android.sh` was renamed to `build.sh`
