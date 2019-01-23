@@ -6,6 +6,6 @@ export CXXFLAGS="-std=c++11"
         "${ANDROID_NDK_ROOT}" \
         --arch=armeabi-v7a,x86 \
         --with-libraries=thread,filesystem,date_time,system,atomic \
-        --boost=1.67.0 \
+        --boost=1.69.0 \
     | grep -v -F "common.copy"
 
