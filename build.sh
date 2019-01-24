@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CXXFLAGS="-std=c++11"
+export CXXFLAGS="-std=c++14"
 
 ./build-android.sh \
         "${ANDROID_NDK_ROOT}" \
