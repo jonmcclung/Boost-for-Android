@@ -7,4 +7,4 @@
 <compileflags>$(AndroidNDKRoot)/sysroot
 <compileflags>-isystem
 <compileflags>$(AndroidNDKRoot)/sysroot/usr/include/x86_64-linux-android
-<compileflags>-D__ANDROID_API__=16
+<compileflags>-D__ANDROID_API__=21
