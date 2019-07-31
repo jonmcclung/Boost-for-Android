@@ -8,4 +8,4 @@
 <compileflags>$(AndroidNDKRoot)/sysroot
 <compileflags>-isystem
 <compileflags>$(AndroidNDKRoot)/sysroot/usr/include/mipsel-linux-android
-<compileflags>-D__ANDROID_API__=15
+<compileflags>-D__ANDROID_API__=16
