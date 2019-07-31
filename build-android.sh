@@ -30,21 +30,25 @@
 BOOST_VER1=1
 BOOST_VER2=69
 BOOST_VER3=0
-register_option "--boost=<version>" boost_version "Boost version to be used, one of {1.69.0, 1.68.0, 1.67.0, 1.66.0, 1.65.1, 1.55.0, 1.54.0, 1.53.0, 1.49.0, 1.48.0, 1.45.0}, default is 1.69.0."
+register_option "--boost=<version>" boost_version "Boost version to be used, one of {1.70.0, 1.69.0, 1.68.0, 1.67.0, 1.66.0, 1.65.1, 1.55.0, 1.54.0, 1.53.0, 1.49.0, 1.48.0, 1.45.0}, default is 1.69.0."
 boost_version()
 {
-  if [ "$1" = "1.69.0" ]; then
+  if [ "$1" = "1.70.0" ]; then
+    BOOST_VER1=1
+    BOOST_VER2=70
+    BOOST_VER3=0
+  elif [ "$1" = "1.69.0" ]; then
     BOOST_VER1=1
     BOOST_VER2=69
-    BOOST_VER3=0
+    BOOST_VER3=0    
   elif [ "$1" = "1.68.0" ]; then
     BOOST_VER1=1
     BOOST_VER2=68
-    BOOST_VER3=0
+    BOOST_VER3=0    
   elif [ "$1" = "1.67.0" ]; then
     BOOST_VER1=1
     BOOST_VER2=67
-    BOOST_VER3=0
+    BOOST_VER3=0    
   elif [ "$1" = "1.66.0" ]; then
     BOOST_VER1=1
     BOOST_VER2=66
@@ -105,14 +109,14 @@ do_download ()
 #LIBRARIES=--with-libraries=date_time,filesystem,program_options,regex,signals,system,thread,iostreams,locale
 LIBRARIES=
 register_option "--with-libraries=<list>" do_with_libraries "Comma separated list of libraries to build."
-do_with_libraries () {
-  for lib in $(echo $1 | tr ',' '\n') ; do LIBRARIES="--with-$lib ${LIBRARIES}"; done
+do_with_libraries () { 
+  for lib in $(echo $1 | tr ',' '\n') ; do LIBRARIES="--with-$lib ${LIBRARIES}"; done 
 }
 
 register_option "--without-libraries=<list>" do_without_libraries "Comma separated list of libraries to exclude from the build."
 do_without_libraries () {	LIBRARIES="--without-libraries=$1"; }
-do_without_libraries () {
-  for lib in $(echo $1 | tr ',' '\n') ; do LIBRARIES="--without-$lib ${LIBRARIES}"; done
+do_without_libraries () { 
+  for lib in $(echo $1 | tr ',' '\n') ; do LIBRARIES="--without-$lib ${LIBRARIES}"; done 
 }
 
 register_option "--prefix=<path>" do_prefix "Prefix to be used when installing libraries and includes."
@@ -126,6 +130,12 @@ ARCHLIST=
 register_option "--arch=<list>" do_arch "Comma separated list of architectures to build: arm64-v8a,armeabi,armeabi-v7a,mips,mips64,x86,x86_64"
 do_arch () {
   for ARCH in $(echo $1 | tr ',' '\n') ; do ARCHLIST="$ARCH ${ARCHLIST}"; done
+}
+
+WITH_ICONV=
+register_option "--with-iconv" do_with_iconv "Build iconv and icu libaries, for boost-locale"
+do_with_iconv () {
+  WITH_ICONV=1
 }
 
 PROGRAM_PARAMETERS="<ndk-root>"
@@ -151,10 +161,10 @@ BUILD_DIR="./build/"
 if [ $CLEAN = yes ] ; then
 	echo "Cleaning: $BUILD_DIR"
 	rm -f -r $PROGDIR/$BUILD_DIR
-
+	
 	echo "Cleaning: $BOOST_DIR"
 	rm -f -r $PROGDIR/$BOOST_DIR
-
+	
 	echo "Cleaning: $BOOST_TAR"
 	rm -f $PROGDIR/$BOOST_TAR
 
@@ -247,6 +257,8 @@ fi
 
 echo "Detected Android NDK version $NDK_RN"
 
+CONFIG_VARIANT=boost
+
 case "$NDK_RN" in
 	4*)
 		TOOLCHAIN=${TOOLCHAIN:-arm-eabi-4.4.0}
@@ -298,10 +310,16 @@ case "$NDK_RN" in
 		CXXPATH=$AndroidNDKRoot/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/arm-linux-androideabi-g++
 		TOOLSET=gcc-androidR8e
 		;;
-	"16.0"|"16.1"|"17.1"|"17.2"|"18.0"|"18.1"|"19.0")
+	"16.0"|"16.1"|"17.1"|"17.2"|"18.0"|"18.1")
 		TOOLCHAIN=${TOOLCHAIN:-llvm}
 		CXXPATH=$AndroidNDKRoot/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/clang++
 		TOOLSET=clang
+		;;
+	"19.0"|"19.1"|"19.2"|"20.0")
+		TOOLCHAIN=${TOOLCHAIN:-llvm}
+		CXXPATH=$AndroidNDKRoot/toolchains/${TOOLCHAIN}/prebuilt/${PlatformOS}-x86_64/bin/clang++
+		TOOLSET=clang
+		CONFIG_VARIANT=ndk19
 		;;
 	*)
 		echo "Undefined or not supported Android NDK version: $NDK_RN"
@@ -318,12 +336,12 @@ if [ -z "${ARCHLIST}" ]; then
 
     case "$NDK_RN" in
       # NDK 17+: Support for ARMv5 (armeabi), MIPS, and MIPS64 has been removed.
-      "17.1"|"17.2"|"18.0"|"18.1"|"19.0")
+      "17.1"|"17.2"|"18.0"|"18.1"|"19.0"|"19.1"|"19.2"|"20.0")
         ARCHLIST="arm64-v8a armeabi-v7a x86 x86_64"
         ;;
       *)
         ARCHLIST="arm64-v8a armeabi armeabi-v7a mips mips64 x86 x86_64"
-    esac
+    esac    
   fi
 fi
 
@@ -332,7 +350,7 @@ if [ "${ARCHLIST}" '!=' "armeabi" ] && [ "${TOOLSET}" '!=' "clang" ]; then
     exit 1
 fi
 
-echo Building with TOOLSET=$TOOLSET CXXPATH=$CXXPATH CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS | tee $PROGDIR/build.log
+echo Building with TOOLSET=$TOOLSET CONFIG_VARIANT=${CONFIG_VARIANT} CXXPATH=$CXXPATH CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS | tee $PROGDIR/build.log
 
 # Check if the ndk is valid or not
 if [ ! -f $CXXPATH ]
@@ -362,7 +380,11 @@ fi
 if [ ! -d $PROGDIR/$BOOST_DIR ]
 then
 	echo "Unpacking boost"
-  tar xjf $PROGDIR/$BOOST_TAR
+	if [ "$OPTION_PROGRESS" = "yes" ] ; then
+		pv $PROGDIR/$BOOST_TAR | tar xjf - -C $PROGDIR
+	else
+		tar xjf $PROGDIR/$BOOST_TAR
+	fi
 fi
 
 if [ $DOWNLOAD = yes ] ; then
@@ -378,7 +400,7 @@ then
   # Make the initial bootstrap
   echo "Performing boost bootstrap"
 
-  cd $BOOST_DIR
+  cd $BOOST_DIR 
   case "$HOST_OS" in
     windows)
         cmd //c "bootstrap.bat" 2>&1 | tee -a $PROGDIR/build.log
@@ -393,7 +415,7 @@ then
   	exit 1
   fi
   cd $PROGDIR
-
+  
   # -------------------------------------------------------------
   # Patching will be done only if we had a successfull bootstrap!
   # -------------------------------------------------------------
@@ -403,19 +425,19 @@ then
   PATCH_BOOST_DIR=$PROGDIR/patches/boost-${BOOST_VER}
 
   if [ "$TOOLSET" = "clang" ]; then
-      cp configs/user-config-boost-${BOOST_VER}.jam $BOOST_DIR/tools/build/src/user-config.jam || exit 1
-      for FILE in configs/user-config-boost-${BOOST_VER}-*.jam; do
-          ARCH="`echo $FILE | sed s%configs/user-config-boost-${BOOST_VER}-%% | sed s/[.]jam//`"
+      cp configs/user-config-${CONFIG_VARIANT}-${BOOST_VER}.jam $BOOST_DIR/tools/build/src/user-config.jam || exit 1
+      for FILE in configs/user-config-${CONFIG_VARIANT}-${BOOST_VER}-*.jam; do
+          ARCH="`echo $FILE | sed s%configs/user-config-${CONFIG_VARIANT}-${BOOST_VER}-%% | sed s/[.]jam//`"
           if [ "$ARCH" = "common" ]; then
               continue
           fi
           JAMARCH="`echo ${ARCH} | tr -d '_-'`" # Remove all dashes, bjam does not like them
-          sed "s/%ARCH%/${JAMARCH}/g" configs/user-config-boost-${BOOST_VER}-common.jam >> $BOOST_DIR/tools/build/src/user-config.jam || exit 1
-          cat configs/user-config-boost-${BOOST_VER}-$ARCH.jam >> $BOOST_DIR/tools/build/src/user-config.jam || exit 1
+          sed "s/%ARCH%/${JAMARCH}/g" configs/user-config-${CONFIG_VARIANT}-${BOOST_VER}-common.jam >> $BOOST_DIR/tools/build/src/user-config.jam || exit 1
+          cat configs/user-config-${CONFIG_VARIANT}-${BOOST_VER}-$ARCH.jam >> $BOOST_DIR/tools/build/src/user-config.jam || exit 1
           echo ';' >> $BOOST_DIR/tools/build/src/user-config.jam || exit 1
       done
   else
-      cp configs/user-config-boost-${BOOST_VER}.jam $BOOST_DIR/tools/build/v2/user-config.jam || exit 1
+      cp configs/user-config-${CONFIG_VARIANT}-${BOOST_VER}.jam $BOOST_DIR/tools/build/v2/user-config.jam || exit 1
   fi
 
   for dir in $PATCH_BOOST_DIR; do
@@ -464,12 +486,12 @@ for ARCH in $ARCHLIST; do
 echo "Building boost for android for $ARCH"
 (
 
-  if echo $LIBRARIES | grep locale; then
+  if [ -n "$WITH_ICONV" ] || echo $LIBRARIES | grep locale; then
     if [ -e libiconv-libicu-android ]; then
       echo "ICONV and ICU already compiled"
     else
       echo "boost_locale selected - compiling ICONV and ICU"
-      git clone https://github.com/pelya/libiconv-libicu-android.git
+      git clone --depth=1 https://github.com/pelya/libiconv-libicu-android.git
       cd libiconv-libicu-android
       ./build.sh || exit 1
       cd ..
@@ -479,12 +501,12 @@ echo "Building boost for android for $ARCH"
   cd $BOOST_DIR
 
   echo "Adding pathname: `dirname $CXXPATH`"
-  # `AndroidBinariesPath` could be used by user-config-boost-*.jam
+  # `AndroidBinariesPath` could be used by user-config-*.jam
   export AndroidBinariesPath=`dirname $CXXPATH`
   export PATH=$AndroidBinariesPath:$PATH
-  export AndroidNDKRoot
+  export AndroidNDKRoot=$AndroidNDKRoot
   export NO_BZIP2=1
-  export PlatformOS
+  export PlatformOS=$PlatformOS
 
   cflags=""
   for flag in $CFLAGS; do cflags="$cflags cflags=$flag"; done
@@ -510,10 +532,6 @@ echo "Building boost for android for $ARCH"
       TOOLSET_ARCH=${TOOLSET}
       TARGET_OS=linux
   fi
-
-  echo "Toolset is $TOOLSET"
-  echo "Toolset architecture is $TOOLSET_ARCH"
-  echo "Target OS is $TARGET_OS"
 
   WITHOUT_LIBRARIES=--without-python
   if [ -n "$LIBRARIES" ]; then
